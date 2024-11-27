@@ -51,7 +51,7 @@ pipeline {
                 scannerHome = '/opt/sonar-scanner'
             }
             steps {
-                withSonarQubeEnv('Sonar-uk') {
+                withSonarQubeEnv('sonarqube-server') {
                     sh "${scannerHome}/bin/sonar-scanner"
                 }
             }
@@ -73,7 +73,7 @@ pipeline {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
                     sh """
                     cd ${WORKSPACE}/src
-                    docker build -t thimone/springboot:${gitCommitHash} .
+                    docker build -t noupa/springboot:${gitCommitHash} .
                     """
                 }
             }
@@ -87,7 +87,7 @@ pipeline {
                 script {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
                     sh """
-                    docker push thimone/springboot:${gitCommitHash}
+                    docker push noupa/springboot:${gitCommitHash}
                     """
                 }
             }
