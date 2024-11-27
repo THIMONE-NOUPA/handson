@@ -1,4 +1,4 @@
-pipeline {
+pipeline { 
     agent any
 
     environment {
@@ -29,30 +29,26 @@ pipeline {
         }
 
         stage('Testing') {
-            agent {
-                docker { image 'maven:3.8.5-openjdk-18' }
-            }
             steps {
-                sh '''
-                cd src
-                mvn test
-                '''
+                script {
+                    docker.image('maven:3.8.5-openjdk-18').inside {
+                        sh '''
+                        cd src
+                        mvn test
+                        '''
+                    }
+                }
             }
         }
 
         stage('SonarQube analysis') {
-            agent {
-                docker {
-                    image 'sonarsource/sonar-scanner-cli:5.0.1'
-                }
-            }
-            environment {
-                CI = 'true'
-                scannerHome = '/opt/sonar-scanner'
-            }
             steps {
-                withSonarQubeEnv('sonarqube-server') {
-                    sh "${scannerHome}/bin/sonar-scanner"
+                script {
+                    docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside {
+                        withSonarQubeEnv('sonarqube-server') {
+                            sh '/opt/sonar-scanner/bin/sonar-scanner'
+                        }
+                    }
                 }
             }
         }
@@ -60,9 +56,7 @@ pipeline {
         stage('Login to DockerHub') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS) {
-                        sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'
-                    }
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
                 }
             }
         }
