@@ -31,7 +31,7 @@ pipeline {
         stage('Testing') {
             steps {
                 script {
-                    docker.image('maven:3.8.5-openjdk-18').inside {
+                    docker.image('maven:3.8.5-openjdk-18').inside('--user root') {
                         sh '''
                         cd src
                         mvn test
@@ -44,7 +44,7 @@ pipeline {
         stage('SonarQube analysis') {
             steps {
                 script {
-                    docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside {
+                    docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside('--user root') {
                         withSonarQubeEnv('sonarqube-server') {
                             sh '/opt/sonar-scanner/bin/sonar-scanner'
                         }
