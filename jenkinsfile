@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-token')
+        SONAR_TOKEN = credentials('sonar-token') // Add your SonarQube token credentials
     }
 
     options {
@@ -45,8 +46,14 @@ pipeline {
             steps {
                 script {
                     docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside('--user root') {
-                        withSonarQubeEnv('sonarqube-server') {
-                            sh '/opt/sonar-scanner/bin/sonar-scanner'
+                        withSonarQubeEnv('sonarqube') { // 'sonarqube' should match the name configured in Jenkins
+                            sh '''
+                            sonar-scanner \
+                                -Dsonar.projectKey=springboot \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=https://sonarqube-server.thimone.com \
+                                -Dsonar.login=$SONAR_TOKEN
+                            '''
                         }
                     }
                 }
@@ -100,3 +107,4 @@ pipeline {
         }
     }
 }
+
