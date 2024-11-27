@@ -74,7 +74,7 @@ pipeline {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
                     sh """
                     cd ${WORKSPACE}/src
-                    docker build -t noupa/springboot:${gitCommitHash} ${WORKSPACE}
+                    docker build -t thimone/springboot:${gitCommitHash} ${WORKSPACE}
                     """
                 }
             }
@@ -86,7 +86,7 @@ pipeline {
                 script {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
                     sh """
-                    docker push noupa/springboot:${gitCommitHash}
+                    docker push thimone/springboot:${gitCommitHash}
                     """
                 }
             }
