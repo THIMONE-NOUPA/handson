@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-token')
-        SONAR_TOKEN = credentials('sonar-token') // Add your SonarQube token credentials
+        SONAR_TOKEN = credentials('sonar-tok') // Add your SonarQube token credentials
     }
 
     options {
