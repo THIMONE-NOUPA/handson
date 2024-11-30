@@ -1,0 +1,8 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+http://{{ (index .Values.ingress.hosts 0).host }}
+{{- else }}
+The ingress is disabled. Use the service to access the application:
+kubectl get svc {{ .Release.Name }}-service
+{{- end }}
+

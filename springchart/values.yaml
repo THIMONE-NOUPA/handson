@@ -1,0 +1,43 @@
+replicaCount: 3
+
+image:
+  repository: noupa/springboot
+  tag: "6c70a8"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+readinessProbe:
+  path: /
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+livenessProbe:
+  path: /
+  port: 8080
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  cpuTarget: 80
+  memoryTarget: 75
+
+pdb:
+  minAvailable: 2
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: springboot.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []

@@ -1,0 +1,107 @@
+pipeline { 
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker-token')
+        SONAR_TOKEN = credentials('sonar-tok') // Add your SonarQube token credentials
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+        timeout(time: 60, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                script {
+                    checkout scmGit(
+                        branches: [[name: '*/main']],
+                        extensions: [],
+                        userRemoteConfigs: [[
+                            credentialsId: 'jenkins-token',
+                            url: 'https://github.com/THIMONE-NOUPA/handson.git'
+                        ]]
+                    )
+                }
+            }
+        }
+
+        stage('Testing') {
+            steps {
+                script {
+                    docker.image('maven:3.8.5-openjdk-18').inside('--user root') {
+                        sh '''
+                        cd src
+                        mvn test
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube analysis') {
+            steps {
+                script {
+                    docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside('--user root') {
+                        withSonarQubeEnv('sonarqube') { // 'sonarqube' should match the name configured in Jenkins
+                            sh '''
+                            sonar-scanner \
+                                -Dsonar.projectKey=springboot \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=https://sonarqube-server.thimone.com \
+                                -Dsonar.login=$SONAR_TOKEN
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
+                    sh """
+                    cd ${WORKSPACE}/src
+                    docker build -t noupa/springboot:${gitCommitHash} ${WORKSPACE}
+                    """
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+
+            steps {
+                script {
+                    def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
+                    sh """
+                    docker push noupa/springboot:${gitCommitHash}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution completed.'
+        }
+        success {
+            echo 'Pipeline executed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
