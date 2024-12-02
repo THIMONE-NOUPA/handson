@@ -35,6 +35,7 @@ pipeline {
                     docker.image('maven:3.8.5-openjdk-18').inside('--user root') {
                         sh '''
                         cd src
+                        ls
                         mvn package
                         '''
                     }
