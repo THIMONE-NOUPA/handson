@@ -1,9 +1,9 @@
-verpipeline { 
+pipeline { 
     agent any
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-token')
-        SONAR_TOKEN = credentials('sonar-tok') // Add your SonarQube token credentials
+        SONAR_TOKEN = credentials('sonar-tok') // SonarQube token credentials
     }
 
     options {
@@ -17,14 +17,15 @@ verpipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    checkout scmGit(
+                    checkout([
+                        $class: 'GitSCM',
                         branches: [[name: '*/main']],
                         extensions: [],
                         userRemoteConfigs: [[
                             credentialsId: 'git-token',
                             url: 'https://github.com/THIMONE-NOUPA/handson.git'
                         ]]
-                    )
+                    ])
                 }
             }
         }
@@ -64,7 +65,9 @@ verpipeline {
         stage('Login to DockerHub') {
             steps {
                 script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    sh '''
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    '''
                 }
             }
         }
@@ -75,14 +78,13 @@ verpipeline {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
                     sh """
                     cd ${WORKSPACE}/src
-                    docker build -t noupa/springboot:${gitCommitHash} ${WORKSPACE}
+                    docker build -t noupa/springboot:${gitCommitHash} .
                     """
                 }
             }
         }
 
         stage('Push Docker Image') {
-
             steps {
                 script {
                     def gitCommitHash = sh(script: 'git rev-parse --short=6 HEAD', returnStdout: true).trim()
@@ -106,4 +108,3 @@ verpipeline {
         }
     }
 }
-
