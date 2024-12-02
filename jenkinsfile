@@ -1,5 +1,7 @@
 pipeline { 
-    agent any
+    agent {
+        label 'jenkins-agent'
+    }
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-token')
@@ -21,7 +23,7 @@ pipeline {
                         branches: [[name: '*/main']],
                         extensions: [],
                         userRemoteConfigs: [[
-                            credentialsId: 'jenkins-token',
+                            credentialsId: 'git-token',
                             url: 'https://github.com/THIMONE-NOUPA/handson.git'
                         ]]
                     )
@@ -35,7 +37,7 @@ pipeline {
                     docker.image('maven:3.8.5-openjdk-18').inside('--user root') {
                         sh '''
                         cd src
-                        mvn test
+                        mvn package
                         '''
                     }
                 }
