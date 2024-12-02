@@ -38,7 +38,7 @@ pipeline {
                         echo "testing stage"
                         cd src
                         ls
-                        mvn package
+                        mvn test
                         '''
                     }
                 }
