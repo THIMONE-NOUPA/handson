@@ -1,4 +1,4 @@
-pipeline { 
+verpipeline { 
     agent any
 
     environment {
@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside('--user root') {
-                        withSonarQubeEnv('sonarqube') { // 'sonarqube' should match the name configured in Jenkins
+                        withSonarQubeEnv('sonar-server') { // 'sonarqube' should match the name configured in Jenkins
                             sh '''
                             sonar-scanner \
                                 -Dsonar.projectKey=springboot \
