@@ -51,6 +51,7 @@ pipeline {
                     docker.image('sonarsource/sonar-scanner-cli:5.0.1').inside('--user root') {
                         withSonarQubeEnv('sonar-server') { // 'sonarqube' should match the name configured in Jenkins
                             sh '''
+                            cd src
                             sonar-scanner \
                                 -Dsonar.projectKey=springboot \
                                 -Dsonar.sources=. \
